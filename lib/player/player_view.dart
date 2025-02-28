@@ -7,23 +7,23 @@ class Player360View extends StatelessWidget {
     super.key,
     required this.videoUrl,
     required this.playerState,
+    required this.width,
+    required this.height,
   });
+
+  final double width;
+  final double height;
 
   final String videoUrl;
   final ListenablePlayerState playerState;
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    final height =
-        playerState.isFullscreen
-            ? MediaQuery.of(context).size.height
-            : size.width / 2;
     return VrPlayer(
       key: ValueKey(videoUrl),
       x: 0,
       y: 0,
-      width: size.width,
+      width: width,
       height: height,
       onCreated: onViewPlayerCreated,
     );

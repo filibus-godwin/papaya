@@ -46,17 +46,31 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class VideoPlayerPage extends StatelessWidget {
+class VideoPlayerPage extends StatefulWidget {
   const VideoPlayerPage({super.key});
 
   @override
+  State<VideoPlayerPage> createState() => _VideoPlayerPageState();
+}
+
+class _VideoPlayerPageState extends State<VideoPlayerPage> {
+  final playerKey = GlobalKey<Player360WidgetState>();
+
+  @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final height =
+        (playerKey.currentState?.playerState.isFullscreen ?? false)
+            ? MediaQuery.of(context).size.height
+            : size.width / 2;
     return OrientationBuilder(
       builder: (context, orientation) {
         final isLandscape = orientation == Orientation.landscape;
         return Scaffold(
           appBar: isLandscape ? null : AppBar(),
-          body: const Player360Widget(
+          body: Player360Widget(
+            width: size.width,
+            height: height,
             videoUrl:
                 'https://codetricity.github.io/flutter_video_display/ageda.MP4',
           ),

@@ -131,22 +131,36 @@ class ListenablePlayerState extends ChangeNotifier {
 }
 
 class Player360Widget extends StatefulWidget {
-  const Player360Widget({super.key, required this.videoUrl});
+  const Player360Widget({
+    super.key,
+    required this.videoUrl,
+    required this.height,
+    required this.width,
+  });
   final String videoUrl;
+  final double height;
+  final double width;
 
   @override
-  State<Player360Widget> createState() => _Player360WidgetState();
+  State<Player360Widget> createState() => Player360WidgetState();
 }
 
-class _Player360WidgetState extends State<Player360Widget> {
-  final ListenablePlayerState playerState = ListenablePlayerState();
+class Player360WidgetState extends State<Player360Widget> {
+  final ListenablePlayerState _playerState = ListenablePlayerState();
+
+  ListenablePlayerState get playerState => _playerState;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       alignment: Alignment.bottomCenter,
       children: <Widget>[
-        Player360View(videoUrl: widget.videoUrl, playerState: playerState),
+        Player360View(
+          videoUrl: widget.videoUrl,
+          playerState: playerState,
+          height: widget.height,
+          width: widget.width,
+        ),
         Positioned(
           bottom: 0,
           left: 0,
