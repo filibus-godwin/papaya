@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vr_player/vr_player.dart';
@@ -5,8 +7,8 @@ import 'package:vr_player/vr_player.dart';
 part 'controls.dart';
 part 'player_view.dart';
 
-class _PlayerContext {
-  _PlayerContext({
+class _PlayerState {
+  _PlayerState({
     this.duration = '99:99',
     this.intDuration = 0,
     this.seekPosition = 0.0,
@@ -36,7 +38,7 @@ class _PlayerContext {
   final bool isVolumeSliderShown;
   final VrPlayerController? controller;
 
-  _PlayerContext copyWith({
+  _PlayerState copyWith({
     int? intDuration,
     String? duration,
     bool? isVideoReady,
@@ -51,7 +53,7 @@ class _PlayerContext {
     bool? isVolumeSliderShown,
     VrPlayerController? controller,
   }) {
-    return _PlayerContext(
+    return _PlayerState(
       duration: duration ?? this.duration,
       isPlaying: isPlaying ?? this.isPlaying,
       controller: controller ?? this.controller,
@@ -69,10 +71,10 @@ class _PlayerContext {
   }
 }
 
-class ListenablePlayerContext extends ChangeNotifier {
-  ListenablePlayerContext();
+class ListenablePlayerState extends ChangeNotifier {
+  ListenablePlayerState();
 
-  _PlayerContext _context = _PlayerContext();
+  _PlayerState _context = _PlayerState();
 
   VrPlayerController? get controller => _context.controller;
 
@@ -90,7 +92,7 @@ class ListenablePlayerContext extends ChangeNotifier {
   bool get isVolumeSliderShown => _context.isVolumeSliderShown;
 
   void reset() {
-    _context = _PlayerContext();
+    _context = _PlayerState();
     notifyListeners();
   }
 
@@ -137,22 +139,22 @@ class Player360Widget extends StatefulWidget {
 }
 
 class _Player360WidgetState extends State<Player360Widget> {
-  final ListenablePlayerContext playerContext = ListenablePlayerContext();
+  final ListenablePlayerState playerState = ListenablePlayerState();
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       alignment: Alignment.bottomCenter,
       children: <Widget>[
-        Player360(videoUrl: widget.videoUrl, playerContext: playerContext),
+        Player360View(videoUrl: widget.videoUrl, playerState: playerState),
         Positioned(
           bottom: 0,
           left: 0,
           right: 0,
           child: ListenableBuilder(
-            listenable: playerContext,
+            listenable: playerState,
             builder: (context, child) {
-              return PlayerControls(playerContext: playerContext);
+              return PlayerControls(playerState: playerState);
             },
           ),
         ),
@@ -160,14 +162,14 @@ class _Player360WidgetState extends State<Player360Widget> {
           height: 180,
           right: 4,
           top: MediaQuery.of(context).size.height / 4,
-          child: VolumeSlider(playerContext: playerContext),
+          child: VolumeSlider(playerState: playerState),
         ),
 
         Positioned.fill(
           child: ListenableBuilder(
-            listenable: playerContext,
+            listenable: playerState,
             builder: (context, child) {
-              if (!playerContext.isVideoLoading) return SizedBox();
+              if (!playerState.isVideoLoading) return SizedBox();
               return ColoredBox(
                 color: Colors.black,
                 child: Center(child: CircularProgressIndicator()),
@@ -181,16 +183,16 @@ class _Player360WidgetState extends State<Player360Widget> {
 }
 
 class VolumeSlider extends StatelessWidget {
-  const VolumeSlider({super.key, required this.playerContext});
-  final ListenablePlayerContext playerContext;
+  const VolumeSlider({super.key, required this.playerState});
+  final ListenablePlayerState playerState;
 
   @override
   Widget build(BuildContext context) {
-    if (!playerContext.isVolumeSliderShown) return Offstage();
+    if (!playerState.isVolumeSliderShown) return Offstage();
     return RotatedBox(
       quarterTurns: 3,
       child: Slider(
-        value: playerContext.currentSliderValue,
+        value: playerState.currentSliderValue,
         divisions: 10,
         onChanged: onChangeVolumeSlider,
       ),
@@ -198,8 +200,8 @@ class VolumeSlider extends StatelessWidget {
   }
 
   void onChangeVolumeSlider(double value) {
-    playerContext.controller?.setVolume(value);
-    playerContext.updateWith(
+    playerState.controller?.setVolume(value);
+    playerState.updateWith(
       isVolumeEnabled: value != 0,
       currentSliderValue: value,
     );

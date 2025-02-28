@@ -1,9 +1,9 @@
 part of 'player.dart';
 
 class PlayerControls extends StatefulWidget {
-  const PlayerControls({super.key, required this.playerContext});
+  const PlayerControls({super.key, required this.playerState});
 
-  final ListenablePlayerContext playerContext;
+  final ListenablePlayerState playerState;
 
   @override
   State<PlayerControls> createState() => _PlayerControlsState();
@@ -12,24 +12,24 @@ class PlayerControls extends StatefulWidget {
 class _PlayerControlsState extends State<PlayerControls> {
   @override
   Widget build(BuildContext context) {
-    final playerContext = widget.playerContext;
+    final playerState = widget.playerState;
     return ColoredBox(
       color: Colors.black,
       child: Row(
         children: <Widget>[
-          _PlayAndPauseButton(playerContext: playerContext),
+          _PlayAndPauseButton(playerState: playerState),
           Text(
-            playerContext.currentPosition,
+            playerState.currentPosition,
             style: const TextStyle(color: Colors.white),
           ),
-          Expanded(child: _Slider(playerContext: playerContext)),
+          Expanded(child: _Slider(playerState: playerState)),
           Text(
-            playerContext.duration,
+            playerState.duration,
             style: const TextStyle(color: Colors.white),
           ),
-          _VolumeButton(playerContext: playerContext),
-          _FullscreenButton(playerContext: playerContext),
-          _Cardboard(playerContext: playerContext),
+          _VolumeButton(playerState: playerState),
+          _FullscreenButton(playerState: playerState),
+          _Cardboard(playerState: playerState),
         ],
       ),
     );
@@ -37,16 +37,16 @@ class _PlayerControlsState extends State<PlayerControls> {
 }
 
 class _PlayAndPauseButton extends StatelessWidget {
-  const _PlayAndPauseButton({required this.playerContext});
-  final ListenablePlayerContext playerContext;
+  const _PlayAndPauseButton({required this.playerState});
+  final ListenablePlayerState playerState;
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
       icon: Icon(
-        playerContext.isVideoFinished
+        playerState.isVideoFinished
             ? Icons.replay
-            : playerContext.isPlaying
+            : playerState.isPlaying
             ? Icons.pause
             : Icons.play_arrow,
         color: Colors.white,
@@ -56,31 +56,31 @@ class _PlayAndPauseButton extends StatelessWidget {
   }
 
   Future<void> playAndPause() async {
-    if (playerContext.isVideoFinished) {
-      await playerContext.controller?.seekTo(0);
+    if (playerState.isVideoFinished) {
+      await playerState.controller?.seekTo(0);
     }
 
-    if (playerContext.isPlaying) {
-      await playerContext.controller?.pause();
+    if (playerState.isPlaying) {
+      await playerState.controller?.pause();
     } else {
-      await playerContext.controller?.play();
+      await playerState.controller?.play();
     }
 
-    playerContext.updateWith(
-      isPlaying: !playerContext.isPlaying,
+    playerState.updateWith(
+      isPlaying: !playerState.isPlaying,
       isVideoFinished: false,
     );
   }
 }
 
 class _Slider extends StatelessWidget {
-  const _Slider({required this.playerContext});
+  const _Slider({required this.playerState});
 
-  final ListenablePlayerContext playerContext;
+  final ListenablePlayerState playerState;
 
   @override
   Widget build(BuildContext context) {
-    final controller = playerContext.controller;
+    final controller = playerState.controller;
     return SliderTheme(
       data: SliderTheme.of(context).copyWith(
         activeTrackColor: Colors.amberAccent,
@@ -93,8 +93,8 @@ class _Slider extends StatelessWidget {
       ),
       child: Slider(
         min: 0.0,
-        value: playerContext.seekPosition,
-        max: playerContext.intDuration.toDouble(),
+        value: playerState.seekPosition,
+        max: playerState.intDuration.toDouble(),
         onChangeEnd: (value) => controller?.seekTo(value.toInt()),
         onChanged: (value) => onChangePosition(value.toInt()),
       ),
@@ -102,7 +102,7 @@ class _Slider extends StatelessWidget {
   }
 
   void onChangePosition(int millis) {
-    playerContext.updateWith(
+    playerState.updateWith(
       currentPosition: millis.toMsDuration.toPlayerDurationText,
       seekPosition: millis.toDouble(),
     );
@@ -110,9 +110,9 @@ class _Slider extends StatelessWidget {
 }
 
 class _VolumeButton extends StatelessWidget {
-  const _VolumeButton({required this.playerContext});
+  const _VolumeButton({required this.playerState});
 
-  final ListenablePlayerContext playerContext;
+  final ListenablePlayerState playerState;
 
   @override
   Widget build(BuildContext context) {
@@ -120,13 +120,13 @@ class _VolumeButton extends StatelessWidget {
       builder: (context, orientation) {
         final isLandscape = orientation == Orientation.landscape;
 
-        if (!playerContext.isFullscreen || !isLandscape) {
+        if (!playerState.isFullscreen || !isLandscape) {
           return SizedBox();
         }
 
         return IconButton(
           icon: Icon(
-            playerContext.isVolumeEnabled
+            playerState.isVolumeEnabled
                 ? Icons.volume_up_rounded
                 : Icons.volume_off_rounded,
             color: Colors.white,
@@ -138,20 +138,20 @@ class _VolumeButton extends StatelessWidget {
   }
 
   void switchVolumeSliderDisplay({required bool show}) {
-    playerContext.updateWith(isVolumeSliderShown: show);
+    playerState.updateWith(isVolumeSliderShown: show);
   }
 }
 
 class _FullscreenButton extends StatelessWidget {
-  const _FullscreenButton({required this.playerContext});
+  const _FullscreenButton({required this.playerState});
 
-  final ListenablePlayerContext playerContext;
+  final ListenablePlayerState playerState;
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
       icon: Icon(
-        playerContext.isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
+        playerState.isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
         color: Colors.white,
       ),
       onPressed: fullScreenPressed,
@@ -159,10 +159,10 @@ class _FullscreenButton extends StatelessWidget {
   }
 
   Future<void> fullScreenPressed() async {
-    await playerContext.controller?.fullScreen();
-    playerContext.updateWith(isFullscreen: playerContext.isFullscreen);
+    await playerState.controller?.fullScreen();
+    playerState.updateWith(isFullscreen: playerState.isFullscreen);
 
-    if (playerContext.isFullscreen) {
+    if (playerState.isFullscreen) {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeRight,
         DeviceOrientation.landscapeLeft,
@@ -184,16 +184,16 @@ class _FullscreenButton extends StatelessWidget {
 }
 
 class _Cardboard extends StatelessWidget {
-  const _Cardboard({required this.playerContext});
-  final ListenablePlayerContext playerContext;
+  const _Cardboard({required this.playerState});
+  final ListenablePlayerState playerState;
 
   void cardBoardPressed() {
-    playerContext.controller?.toggleVRMode();
+    playerState.controller?.toggleVRMode();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!playerContext.isFullscreen) return Offstage();
+    if (!playerState.isFullscreen) return Offstage();
     return IconButton(icon: Icon(Icons.bolt), onPressed: cardBoardPressed);
   }
 }

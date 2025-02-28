@@ -2,21 +2,21 @@ part of 'player.dart';
 
 // 'https://cdn.bitmovin.com/content/assets/playhouse-vr/m3u8s/105560.m3u8'
 
-class Player360 extends StatelessWidget {
-  const Player360({
+class Player360View extends StatelessWidget {
+  const Player360View({
     super.key,
     required this.videoUrl,
-    required this.playerContext,
+    required this.playerState,
   });
 
   final String videoUrl;
-  final ListenablePlayerContext playerContext;
+  final ListenablePlayerState playerState;
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final height =
-        playerContext.isFullscreen
+        playerState.isFullscreen
             ? MediaQuery.of(context).size.height
             : size.width / 2;
     return VrPlayer(
@@ -33,7 +33,7 @@ class Player360 extends StatelessWidget {
     VrPlayerController controller,
     VrPlayerObserver observer,
   ) {
-    playerContext
+    playerState
       ..reset()
       ..updateWith(controller: controller);
     observer
@@ -41,16 +41,17 @@ class Player360 extends StatelessWidget {
       ..onDurationChange = onReceiveDuration
       ..onPositionChange = onChangePosition
       ..onFinishedChange = onReceiveEnded;
-    playerContext.controller?.loadVideo(videoUrl: videoUrl);
+    playerState.controller?.loadVideo(videoUrl: videoUrl);
   }
 
   void onReceiveState(VrState state) {
+    log(state.name);
     switch (state) {
       case VrState.loading:
-        playerContext.updateWith(isVideoLoading: true);
+        playerState.updateWith(isVideoLoading: true);
         break;
       case VrState.ready:
-        playerContext.updateWith(isVideoLoading: false, isVideoReady: true);
+        playerState.updateWith(isVideoLoading: false, isVideoReady: true);
         break;
       case VrState.buffering:
       case VrState.idle:
@@ -59,33 +60,33 @@ class Player360 extends StatelessWidget {
   }
 
   void onReceiveDuration(int millis) {
-    playerContext.updateWith(
+    playerState.updateWith(
       intDuration: millis,
       duration: millis.toMsDuration.toPlayerDurationText,
     );
   }
 
   void onChangePosition(int millis) {
-    playerContext.updateWith(
+    playerState.updateWith(
       currentPosition: millis.toMsDuration.toPlayerDurationText,
       seekPosition: millis.toDouble(),
     );
   }
 
   void onReceiveEnded(bool isFinished) {
-    playerContext.updateWith(isVideoFinished: isFinished);
+    playerState.updateWith(isVideoFinished: isFinished);
   }
 
   void onChangeVolumeSlider(double value) {
-    playerContext.controller?.setVolume(value);
-    playerContext.updateWith(
+    playerState.controller?.setVolume(value);
+    playerState.updateWith(
       currentSliderValue: value,
       isVolumeEnabled: value != 0,
     );
   }
 
   void switchVolumeSliderDisplay({required bool show}) {
-    playerContext.updateWith(isVolumeSliderShown: show);
+    playerState.updateWith(isVolumeSliderShown: show);
   }
 }
 
